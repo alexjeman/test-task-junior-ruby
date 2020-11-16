@@ -14,7 +14,7 @@ class Accounts
       'name' => kwargs.fetch(:name),
       'currency' => kwargs.fetch(:currency),
       'balance' => kwargs.fetch(:balance, 0),
-      'nature' => kwargs.fetch(:nature, 'credit_card'),
+      'nature' => kwargs.fetch(:nature, 'bank_account'),
       'transactions' => kwargs.fetch(:transactions, [])
     }
 

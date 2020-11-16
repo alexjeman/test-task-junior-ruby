@@ -1,19 +1,28 @@
 {
   "accounts": [
     {
-      "name": "testacc2",
-      "currency": "EUR",
-      "balance": 0,
-      "nature": "credit_card",
+      "name": "40817810200000055320",
+      "currency": "RUB",
+      "balance": 1000000,
+      "nature": "bank_account",
       "transactions": [
 
       ]
     },
     {
-      "name": "testacc1",
-      "currency": "MDL",
-      "balance": 710,
-      "nature": "credit_card",
+      "name": "40817840400000055321",
+      "currency": "USD",
+      "balance": 100000,
+      "nature": "bank_account",
+      "transactions": [
+
+      ]
+    },
+    {
+      "name": "40817978300000055322",
+      "currency": "EUR",
+      "balance": 100000,
+      "nature": "bank_account",
       "transactions": [
 
       ]
