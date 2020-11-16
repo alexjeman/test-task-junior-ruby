@@ -68,3 +68,47 @@ class Accounts
     @account_data = account_data
   end
 end
+
+
+# Class Transactions, for managing transaction_data object with load/save to file and printout method
+class Transactions
+  def initialize
+    @file_path = './transaction_data.json'
+    @transaction_data = {}
+    load_from_file
+  end
+
+  def add_transactions(**kwargs)
+    # Add new transaction object to the class instance
+    new_transaction = {
+      'date' => kwargs.fetch(:date),
+      'description' => kwargs.fetch(:description, ''),
+      'amount' => kwargs.fetch(:amount),
+      'currency' => kwargs.fetch(:currency),
+      'account_name' => kwargs.fetch(:account_name)
+    }
+
+    @transaction_data['transactions'].append(new_transaction)
+  end
+
+  def print_json_transaction_data
+    # Printout of the stored data in JSON format
+    puts JSON.pretty_generate(@transaction_data)
+  end
+
+  def save_to_file
+    # Save to file method, will store transactions_data of the current instance on disk
+    File.write(@file_path, JSON.pretty_generate(@transaction_data))
+  end
+
+  def load_from_file
+    # Load from file method, if any transaction_data was previously stored
+    # this method will be called when instance is initialized
+    begin
+      transaction_data = JSON.parse(File.open(@file_path).read)
+    rescue StandardError
+      transaction_data = { 'transactions' => [] }
+    end
+    @transaction_data = transaction_data
+  end
+end

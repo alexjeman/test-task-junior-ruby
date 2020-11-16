@@ -1,0 +1,18 @@
+{
+  "transactions": [
+    {
+      "date": "2015-01-15",
+      "description": "bought food",
+      "amount": -20.31,
+      "currency": "MDL",
+      "account_name": "account1"
+    },
+    {
+      "date": "2015-01-15",
+      "description": "bought food",
+      "amount": -20.31,
+      "currency": "MDL",
+      "account_name": "account1"
+    }
+  ]
+}
