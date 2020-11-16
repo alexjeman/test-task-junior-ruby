@@ -1,0 +1,22 @@
+{
+  "accounts": [
+    {
+      "name": "testacc2",
+      "currency": "EUR",
+      "balance": 0,
+      "nature": "credit_card",
+      "transactions": [
+
+      ]
+    },
+    {
+      "name": "testacc1",
+      "currency": "MDL",
+      "balance": 710,
+      "nature": "credit_card",
+      "transactions": [
+
+      ]
+    }
+  ]
+}
