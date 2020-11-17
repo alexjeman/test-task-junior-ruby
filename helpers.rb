@@ -78,6 +78,11 @@ class Accounts
     end
     @account_data = account_data
   end
+
+  def instance_reset
+    # Clean instance of any data if needed
+    @account_data = { 'accounts' => [] }
+  end
 end
 
 
@@ -89,7 +94,7 @@ class Transactions
     load_from_file
   end
 
-  def add_transactions(**kwargs)
+  def add_transaction(**kwargs)
     # Add new transaction object to the class instance
     new_transaction = {
       'date' => kwargs.fetch(:date),
@@ -122,6 +127,11 @@ class Transactions
     end
     @transaction_data = transaction_data
   end
+
+  def instance_reset
+    # Clean instance of any data if needed
+    @transaction_data = { 'transactions' => [] }
+  end
 end
 
 def date_picker(**kwargs)
@@ -136,4 +146,14 @@ def date_picker(**kwargs)
   browser.select(class: 'ui-datepicker-month').click
   browser.select_list(class: 'ui-datepicker-month').select month
   browser.link(text: date).click
+end
+
+def symbol_to_short(sym)
+  # Return currency short name based on currency symbol
+  hash = {
+    '₽' => 'RUB',
+    '$' => 'USD',
+    '€' => 'EUR'
+  }
+  hash[sym]
 end
