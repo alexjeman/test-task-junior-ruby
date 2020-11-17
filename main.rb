@@ -59,7 +59,7 @@ class Scraper
       date_picker(browser_instance: @browser, date: '2020-7-16')
       @browser.span(id: 'getTranz').click
       table_data = []
-      @browser.table(class: 'cp-tran-with-balance').wait_until_present
+      @browser.table(class: 'cp-tran-with-balance').wait_until(&:present?)
       @browser.table(class: 'cp-tran-with-balance').tbody.trs.each do |tr|
         if tr.class_name.include? 'cp-item cp-transaction' and not tr.class_name.include? 'cp-income'
           transaction = ['withdraw']
@@ -88,17 +88,49 @@ end
 
 
 def main
+  puts "\n### Using Watir gem, write a script that starts a browser instance and signs"
+  puts '### into the bank interface'
+  puts "###########\n"
+
   scraper = Scraper.new
   scraper.login_demo_account
+
+  puts "\n### Extend your script in the way it should navigate through the bank's page,"
+  puts '### and collect accounts information'
+  puts "###########\n"
+
   scraper.account_data.instance_reset
   scraper.transaction_data.instance_reset
   scraper.fetch_account_data
-  scraper.account_data.print_json_account_data
+
+  puts "\n### Accounts data should be stored in an instance of Accounts class and provide"
+  puts '### a printout of the stored data in JSON format'
+  puts "###########\n"
+
   scraper.account_data.save_to_file
+  scraper.account_data.print_json_account_data
+
+  puts "\n### Extend your script in the way it should iterate over previously stored accounts"
+  puts '### and navigate to the page with their transactions and save those transactions'
+  puts "###########\n"
+
   scraper.fetch_transaction_data
-  scraper.transaction_data.print_json_transaction_data
+
+  puts "\n### Transactions data should be stored in an instance of Transactions class and provide"
+  puts '### a printout of the stored data in JSON format'
+  puts "###########\n"
+
   scraper.transaction_data.save_to_file
-  sleep(999)
+  scraper.transaction_data.print_json_transaction_data
+
+  puts "\n### Add to your script the possibility to printout stored data in JSON format"
+  puts "###########\n"
+
+  print_json_all_data
+
+  puts "\n### Script completed, closing the browser instance"
+  puts "###########\n"
+  scraper.browser.close
 end
 
 if __FILE__ == $0

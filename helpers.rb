@@ -94,6 +94,11 @@ class Transactions
     load_from_file
   end
 
+  def get_account_transactions(account_name)
+    transactions = @transaction_data['transactions']
+    transactions.select { |transaction| transaction['account_name'] == account_name }
+  end
+
   def add_transaction(**kwargs)
     # Add new transaction object to the class instance
     new_transaction = {
@@ -156,4 +161,19 @@ def symbol_to_short(sym)
     '€' => 'EUR'
   }
   hash[sym]
+end
+
+def print_json_all_data(**kwargs)
+  account_data = kwargs.fetch(:account_data, Accounts.new)
+  transaction_data = kwargs.fetch(:transaction_data, Transactions.new)
+  all_accounts = account_data.get_accounts
+  all_accounts.each do |account|
+    account_name = account.fetch('name')
+    account_transactions = transaction_data.get_account_transactions(account_name)
+    account_data.update_account_val(name: account_name,
+                                    key: 'transactions',
+                                    value: account_transactions,
+                                    method: 'update')
+  end
+  account_data.print_json_account_data
 end
