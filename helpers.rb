@@ -8,6 +8,17 @@ class Accounts
     load_from_file
   end
 
+  def get_accounts(**kwargs)
+    # Return one account by name or return all, (i.e. get_account(account_name: "40817810200000055320"))
+    account_name = kwargs.fetch(:account_name, nil)
+    accounts = @account_data.fetch('accounts')
+    if account_name
+      accounts.select { |account| account['name'] == account_name }
+    else
+      accounts
+    end
+  end
+
   def add_account(**kwargs)
     # Add new account object to the class instance
     new_account = {
@@ -111,4 +122,18 @@ class Transactions
     end
     @transaction_data = transaction_data
   end
+end
+
+def date_picker(**kwargs)
+  # DateField read-only field date picker (i.e date_picker(browser_instance: browser, date: "2020-7-16"))
+  browser = kwargs.fetch(:browser_instance)
+  date = kwargs.fetch(:date)
+  year, month, date = date.split('-')
+  month = (month.to_i - 1).to_s
+  browser.input(id: 'DateFrom').click
+  browser.select(class: 'ui-datepicker-year').click
+  browser.select_list(class: 'ui-datepicker-year').select year
+  browser.select(class: 'ui-datepicker-month').click
+  browser.select_list(class: 'ui-datepicker-month').select month
+  browser.link(text: date).click
 end
