@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'watir'
 require 'nokogiri'
 require_relative 'helpers'
@@ -85,8 +87,6 @@ class Scraper
   end
 end
 
-
-
 def main
   puts "\n### Using Watir gem, write a script that starts a browser instance and signs"
   puts '### into the bank interface'
@@ -119,7 +119,6 @@ def main
   puts '### a printout of the stored data in JSON format'
   puts "###########\n"
 
-
   scraper.transaction_data.print_json_transaction_data
 
   scraper.transaction_data.save_to_file
@@ -135,6 +134,4 @@ def main
   scraper.browser.close
 end
 
-if __FILE__ == $0
-  main
-end
+main if __FILE__ == $PROGRAM_NAME

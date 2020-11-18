@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 
 # Class accounts, for managing account_data object with load/save to file and update methods
@@ -84,7 +86,6 @@ class Accounts
     @account_data = { 'accounts' => [] }
   end
 end
-
 
 # Class Transactions, for managing transaction_data object with load/save to file and printout method
 class Transactions
@@ -187,10 +188,10 @@ def html_table_data(**kwargs)
   rows = html.css("tr.#{row_css}")
   rows = rows.map do |row|
     row.css('td').map do |td|
-      if !row_css_exclude
-        td.text if td.parent['class'].to_s.include? row_css
-      else
+      if row_css_exclude
         td.text if td.parent['class'].to_s.include?(row_css) && !td.parent['class'].to_s.include?(row_css_exclude)
+      elsif td.parent['class'].to_s.include? row_css
+        td.text
       end
     end.compact
   end
