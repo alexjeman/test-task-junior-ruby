@@ -2,18 +2,47 @@
 
 require 'json'
 
-# Class accounts, for managing account_data object with load/save to file and update methods
-class Accounts
-  def initialize
-    @file_path = './account_data.json'
-    @account_data = {}
+# Base Class for Accounts and Transactions classes with print to json and simple load/save to file features
+class BaseClass
+  def initialize(file_path)
+    @file_path = file_path
+    @data = {}
     load_from_file
+  end
+
+  def print_json_data
+    # Printout of the stored data in JSON format
+    puts JSON.pretty_generate(@data)
+  end
+
+  def save_to_file
+    # Save to file method, will store data of the current instance on disk
+    File.write(@file_path, JSON.pretty_generate(@data))
+  end
+
+  def load_from_file
+    # Load from file method, if any data was previously stored
+    # this method will be called when instance is initialized
+    begin
+      data = JSON.parse(File.open(@file_path).read)
+    rescue StandardError
+      data = {}
+    end
+    @data = data
+  end
+end
+
+# Class accounts, for managing account_data object and update methods
+class Accounts < BaseClass
+  def initialize(file_path = './account_data.json')
+    super(file_path)
+    instance_reset if @data.empty?
   end
 
   def get_accounts(**kwargs)
     # Return one account by name or return all, (i.e. get_account(account_name: "40817810200000055320"))
     account_name = kwargs.fetch(:account_name, nil)
-    accounts = @account_data.fetch('accounts')
+    accounts = @data.fetch('accounts')
     if account_name
       accounts.select { |account| account['name'] == account_name }
     else
@@ -31,12 +60,7 @@ class Accounts
       'transactions' => kwargs.fetch(:transactions, [])
     }
 
-    @account_data['accounts'].append(new_account)
-  end
-
-  def print_json_account_data
-    # Printout of the stored data in JSON format
-    puts JSON.pretty_generate(@account_data)
+    @data['accounts'].append(new_account)
   end
 
   def update_account_val(**kwargs)
@@ -48,7 +72,7 @@ class Accounts
     key_value = kwargs.fetch(:value)
     update_method = kwargs.fetch(:method)
 
-    accounts = @account_data['accounts']
+    accounts = @data['accounts']
 
     current_acc = accounts.select { |account| account['name'] == account_name }.tap { |account| accounts -= account }
 
@@ -62,41 +86,24 @@ class Accounts
     end
 
     accounts.append(current_acc.first)
-    @account_data = { 'accounts' => accounts }
-  end
-
-  def save_to_file
-    # Save to file method, will store account_data of the current instance on disk
-    File.write(@file_path, JSON.pretty_generate(@account_data))
-  end
-
-  def load_from_file
-    # Load from file method, if any account_data was previously stored
-    # this method will be called when instance is initialized
-    begin
-      account_data = JSON.parse(File.open(@file_path).read)
-    rescue StandardError
-      account_data = { 'accounts' => [] }
-    end
-    @account_data = account_data
+    @data = { 'accounts' => accounts }
   end
 
   def instance_reset
     # Clean instance of any data if needed
-    @account_data = { 'accounts' => [] }
+    @data = { 'accounts' => [] }
   end
 end
 
 # Class Transactions, for managing transaction_data object with load/save to file and printout method
-class Transactions
-  def initialize
-    @file_path = './transaction_data.json'
-    @transaction_data = {}
-    load_from_file
+class Transactions < BaseClass
+  def initialize(file_path = './transaction_data.json')
+    super(file_path)
+    instance_reset if @data.empty?
   end
 
   def get_account_transactions(account_name)
-    transactions = @transaction_data['transactions']
+    transactions = @data['transactions']
     transactions.select { |transaction| transaction['account_name'] == account_name }
   end
 
@@ -110,33 +117,12 @@ class Transactions
       'account_name' => kwargs.fetch(:account_name)
     }
 
-    @transaction_data['transactions'].append(new_transaction)
-  end
-
-  def print_json_transaction_data
-    # Printout of the stored data in JSON format
-    puts JSON.pretty_generate(@transaction_data)
-  end
-
-  def save_to_file
-    # Save to file method, will store transactions_data of the current instance on disk
-    File.write(@file_path, JSON.pretty_generate(@transaction_data))
-  end
-
-  def load_from_file
-    # Load from file method, if any transaction_data was previously stored
-    # this method will be called when instance is initialized
-    begin
-      transaction_data = JSON.parse(File.open(@file_path).read)
-    rescue StandardError
-      transaction_data = { 'transactions' => [] }
-    end
-    @transaction_data = transaction_data
+    @data['transactions'].append(new_transaction)
   end
 
   def instance_reset
     # Clean instance of any data if needed
-    @transaction_data = { 'transactions' => [] }
+    @data = { 'transactions' => [] }
   end
 end
 
@@ -177,11 +163,12 @@ def print_json_all_data(**kwargs)
                                     value: account_transactions,
                                     method: 'update')
   end
-  account_data.print_json_account_data
+  account_data.print_json_data
 end
 
 def html_table_data(**kwargs)
   # Receive html data for a table and return an array based on parameters 'row_css' and 'row_css_exclude'
+  # and at the end remove empty [] arrays
   html = kwargs.fetch(:html)
   row_css = kwargs.fetch(:row_css)
   row_css_exclude = kwargs.fetch(:row_css_exclude, nil)

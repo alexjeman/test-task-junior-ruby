@@ -107,7 +107,7 @@ def main
   puts '### a printout of the stored data in JSON format'
   puts "###########\n"
 
-  scraper.account_data.print_json_account_data
+  scraper.account_data.print_json_data
 
   puts "\n### Extend your script in the way it should iterate over previously stored accounts"
   puts '### and navigate to the page with their transactions and save those transactions'
@@ -119,7 +119,7 @@ def main
   puts '### a printout of the stored data in JSON format'
   puts "###########\n"
 
-  scraper.transaction_data.print_json_transaction_data
+  scraper.transaction_data.print_json_data
 
   scraper.transaction_data.save_to_file
   scraper.account_data.save_to_file
