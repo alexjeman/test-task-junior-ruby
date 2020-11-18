@@ -19,8 +19,8 @@ class Scraper
     @password = kwargs.fetch(:password, 'testpassword')
   end
 
-  def nokogiri_at_css(at_css)
-    Nokogiri::HTML(@browser.html).at_css(at_css)
+  def nokogiri_at_css(html, at_css)
+    Nokogiri::HTML(html).at_css(at_css)
   end
 
   def login_demo_account
@@ -48,14 +48,11 @@ class Scraper
     # and add new account_data to Accounts class instance
     @browser.goto 'https://demo.bank-on-line.ru/#Contracts'
     @browser.table(id: 'contracts-list').wait_until(&:present?)
-    html = nokogiri_at_css('table#contracts-list')
+
+    html = nokogiri_at_css(@browser.html, 'table#contracts-list')
     table_data = html_table_data(html: html, row_css: 'cp-item')
-    table_data.each do |row|
-      name = row[1]
-      currency = row[2].slice(-3..-1)
-      balance = row[4].delete(' ').to_i
-      @account_data.add_account(name: name, currency: currency, balance: balance)
-    end
+
+    @account_data.add_accounts_from_table(table_data)
   end
 
   def fetch_transaction_data(**kwargs)
@@ -66,23 +63,14 @@ class Scraper
       date_picker(browser_instance: @browser, date: '2020-7-16')
       @browser.span(id: 'getTranz').click
       @browser.table(class: 'cp-tran-with-balance').wait_until(&:present?)
-      html = nokogiri_at_css('table.cp-tran-with-balance')
 
+      html = nokogiri_at_css(@browser.html, 'table.cp-tran-with-balance')
       table_data_deposit = html_table_data(html: html, row_css: 'cp-income')
       table_data_withdraw = html_table_data(html: html, row_css: 'cp-transaction', row_css_exclude: 'cp-income')
       table_data = table_data_deposit.map { |item| ['deposit'].append(*item) } +
                    table_data_withdraw.map { |item| ['withdraw'].append(*item) }
 
-      table_data.each do |row|
-        date = row[9]
-        description = row[7]
-        amount = row[6].delete(' ').to_i
-        amount = -amount if row.first.include? 'withdraw'
-        currency = row[4]
-        @transaction_data.add_transaction(date: date, description: description,
-                                          amount: amount, currency: currency,
-                                          account_name: account_name)
-      end
+      @transaction_data.add_transactions_from_table(account_name, table_data)
     end
   end
 end
@@ -129,8 +117,10 @@ def main
 
   print_json_all_data
 
-  puts "\n### Script completed, closing the browser instance"
+  seconds_close = 5
+  puts "\n### Script completed, browser instance will be closed in #{seconds_close} seconds"
   puts "###########\n"
+  sleep(seconds_close)
   scraper.browser.close
 end
 

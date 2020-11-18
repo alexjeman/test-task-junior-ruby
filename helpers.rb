@@ -50,6 +50,15 @@ class Accounts < BaseClass
     end
   end
 
+  def add_accounts_from_table(table)
+    table.each do |row|
+      name = row[1]
+      currency = row[2].slice(-3..-1)
+      balance = row[4].delete(' ').to_i
+      add_account(name: name, currency: currency, balance: balance)
+    end
+  end
+
   def add_account(**kwargs)
     # Add new account object to the class instance
     new_account = {
@@ -105,6 +114,19 @@ class Transactions < BaseClass
   def get_account_transactions(account_name)
     transactions = @data['transactions']
     transactions.select { |transaction| transaction['account_name'] == account_name }
+  end
+
+  def add_transactions_from_table(account_name, table_data)
+    table_data.each do |row|
+      date = row[9]
+      description = row[7]
+      amount = row[6].delete(' ').to_i
+      amount = -amount if row.first.include? 'withdraw'
+      currency = row[4]
+      add_transaction(date: date, description: description,
+                                        amount: amount, currency: currency,
+                                        account_name: account_name)
+    end
   end
 
   def add_transaction(**kwargs)
