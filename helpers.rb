@@ -164,6 +164,7 @@ def symbol_to_short(sym)
 end
 
 def print_json_all_data(**kwargs)
+  # Print all stored data to the terminal
   account_data = kwargs.fetch(:account_data, Accounts.new)
   transaction_data = kwargs.fetch(:transaction_data, Transactions.new)
   all_accounts = account_data.get_accounts
@@ -176,4 +177,22 @@ def print_json_all_data(**kwargs)
                                     method: 'update')
   end
   account_data.print_json_account_data
+end
+
+def html_table_data(**kwargs)
+  # Receive html data for a table and return an array based on parameters 'row_css' and 'row_css_exclude'
+  html = kwargs.fetch(:html)
+  row_css = kwargs.fetch(:row_css)
+  row_css_exclude = kwargs.fetch(:row_css_exclude, nil)
+  rows = html.css("tr.#{row_css}")
+  rows = rows.map do |row|
+    row.css('td').map do |td|
+      if !row_css_exclude
+        td.text if td.parent['class'].to_s.include? row_css
+      else
+        td.text if td.parent['class'].to_s.include?(row_css) && !td.parent['class'].to_s.include?(row_css_exclude)
+      end
+    end.compact
+  end
+  rows.delete_if { |elem| elem.flatten.empty? }
 end

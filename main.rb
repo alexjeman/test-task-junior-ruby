@@ -1,4 +1,5 @@
 require 'watir'
+require 'nokogiri'
 require_relative 'helpers'
 
 # Scraper control class, all Accounts and Transactions methods are accessed through this class
@@ -14,6 +15,10 @@ class Scraper
     @transaction_data = Transactions.new
     @login = kwargs.fetch(:login, 'testaccount')
     @password = kwargs.fetch(:password, 'testpassword')
+  end
+
+  def nokogiri_at_css(at_css)
+    Nokogiri::HTML(@browser.html).at_css(at_css)
   end
 
   def login_demo_account
@@ -40,10 +45,10 @@ class Scraper
     # For each row in the new table without headers get account_data ('name', 'currency', 'balance'...)
     # and add new account_data to Accounts class instance
     @browser.goto 'https://demo.bank-on-line.ru/#Contracts'
-    table_data = @browser.table(id: 'contracts-list').strings
-    t_header_index = table_data.index { |n| n.join =~ /\d/ }
-    cleaned_table = table_data.slice(t_header_index..-1)
-    cleaned_table.each do |row|
+    @browser.table(id: 'contracts-list').wait_until(&:present?)
+    html = nokogiri_at_css('table#contracts-list')
+    table_data = html_table_data(html: html, row_css: 'cp-item')
+    table_data.each do |row|
       name = row[1]
       currency = row[2].slice(-3..-1)
       balance = row[4].delete(' ').to_i
@@ -58,25 +63,20 @@ class Scraper
       @browser.goto "https://demo.bank-on-line.ru/#Contracts/#{account_name}/Transactions"
       date_picker(browser_instance: @browser, date: '2020-7-16')
       @browser.span(id: 'getTranz').click
-      table_data = []
       @browser.table(class: 'cp-tran-with-balance').wait_until(&:present?)
-      @browser.table(class: 'cp-tran-with-balance').tbody.trs.each do |tr|
-        if tr.class_name.include? 'cp-item cp-transaction' and not tr.class_name.include? 'cp-income'
-          transaction = ['withdraw']
-          tr.each { |td| transaction.append(td.text) unless td.text.empty? }
-          table_data.append(transaction)
-        elsif tr.class_name.include? 'cp-income'
-          transaction = ['deposit']
-          tr.each { |td| transaction.append(td.text) unless td.text.empty? }
-          table_data.append(transaction)
-        end
-      end
+      html = nokogiri_at_css('table.cp-tran-with-balance')
+
+      table_data_deposit = html_table_data(html: html, row_css: 'cp-income')
+      table_data_withdraw = html_table_data(html: html, row_css: 'cp-transaction', row_css_exclude: 'cp-income')
+      table_data = table_data_deposit.map { |item| ['deposit'].append(*item) } +
+                   table_data_withdraw.map { |item| ['withdraw'].append(*item) }
+
       table_data.each do |row|
-        date = row[-3]
-        description = row[3]
-        amount = row[-2].delete(' ').to_i
+        date = row[9]
+        description = row[7]
+        amount = row[6].delete(' ').to_i
         amount = -amount if row.first.include? 'withdraw'
-        currency = symbol_to_short(row[-2][-1])
+        currency = row[4]
         @transaction_data.add_transaction(date: date, description: description,
                                           amount: amount, currency: currency,
                                           account_name: account_name)
@@ -107,7 +107,6 @@ def main
   puts '### a printout of the stored data in JSON format'
   puts "###########\n"
 
-  scraper.account_data.save_to_file
   scraper.account_data.print_json_account_data
 
   puts "\n### Extend your script in the way it should iterate over previously stored accounts"
@@ -120,8 +119,11 @@ def main
   puts '### a printout of the stored data in JSON format'
   puts "###########\n"
 
-  scraper.transaction_data.save_to_file
+
   scraper.transaction_data.print_json_transaction_data
+
+  scraper.transaction_data.save_to_file
+  scraper.account_data.save_to_file
 
   puts "\n### Add to your script the possibility to printout stored data in JSON format"
   puts "###########\n"
