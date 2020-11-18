@@ -124,8 +124,8 @@ class Transactions < BaseClass
       amount = -amount if row.first.include? 'withdraw'
       currency = row[4]
       add_transaction(date: date, description: description,
-                                        amount: amount, currency: currency,
-                                        account_name: account_name)
+                      amount: amount, currency: currency,
+                      account_name: account_name)
     end
   end
 
