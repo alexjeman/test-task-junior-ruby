@@ -42,9 +42,8 @@ class Scraper
 
   def fetch_account_data
     # Open Accounts page
-    # Get entire table data into 2D array
-    # If table headers are present in table find the index to slice them (Supposed header rows contain only string data)
-    # For each row in the new table without headers get account_data ('name', 'currency', 'balance'...)
+    # Get table data into 2D array
+    # For each row in the table get account_data ('name', 'currency', 'balance'...)
     # and add new account_data to Accounts class instance
     @browser.goto 'https://demo.bank-on-line.ru/#Contracts'
     @browser.table(id: 'contracts-list').wait_until(&:present?)
